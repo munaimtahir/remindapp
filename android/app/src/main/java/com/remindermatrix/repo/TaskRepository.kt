@@ -1,14 +1,20 @@
 package com.remindermatrix.repo
 
-import com.remindermatrix.data.Task
-import com.remindermatrix.data.TaskDao
+import com.remindermatrix.data.*
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class TaskRepository @Inject constructor(
-    private val dao: TaskDao
+    private val taskDao: TaskDao,
+    private val groupDao: GroupDao,
+    private val sectionDao: SectionDao
 ) {
-    fun all(): Flow<List<Task>> = dao.all()
-    suspend fun upsert(task: Task) = dao.upsert(task)
-    suspend fun delete(id: String) = dao.delete(id)
+    fun allTasks(): Flow<List<Task>> = taskDao.all()
+    suspend fun upsertTask(task: Task) = taskDao.upsert(task)
+    suspend fun deleteTask(id: String) = taskDao.delete(id)
+
+    fun allGroups(): Flow<List<Group>> = groupDao.all()
+    fun allSections(): Flow<List<Section>> = sectionDao.all()
 }

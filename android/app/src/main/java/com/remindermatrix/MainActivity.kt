@@ -3,38 +3,45 @@ package com.remindermatrix
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.remindermatrix.ui.detail.TaskDetailScreen
+import com.remindermatrix.ui.inbox.InboxScreen
+import com.remindermatrix.ui.settings.SettingsScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { AppRoot() }
-    }
-}
-
-@Composable
-fun AppRoot() {
-    var title by remember { mutableStateOf("") }
-    Scaffold(
-        topBar = { TopAppBar(title = { Text("Reminder‑Matrix") }) },
-        content = { padding ->
-            Column(Modifier.padding(padding).padding(16.dp)) {
-                OutlinedTextField(value = title, onValueChange = { title = it }, label = { Text("Quick task") }, modifier = Modifier.fillMaxWidth())
-                Spacer(Modifier.height(8.dp))
-                Row {
-                    Button(onClick = { /* TODO: save + schedule */ }) { Text("Add") }
-                    Spacer(Modifier.width(8.dp))
-                    OutlinedButton(onClick = { title = "" }) { Text("Clear") }
+        setContent {
+            val navController = rememberNavController()
+            NavHost(navController = navController, startDestination = "inbox") {
+                composable("inbox") {
+                    InboxScreen(
+                        onTaskClick = { taskId ->
+                            navController.navigate("task/$taskId")
+                        },
+                        onSettingsClick = {
+                            navController.navigate("settings")
+                        }
+                    )
                 }
-                Spacer(Modifier.height(16.dp))
-                Text("Inbox (stub list)", style = MaterialTheme.typography.titleMedium)
+                composable("settings") {
+                    SettingsScreen()
+                }
+                composable(
+                    "task/{taskId}",
+                    arguments = listOf(navArgument("taskId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    TaskDetailScreen(
+                        taskId = backStackEntry.arguments?.getString("taskId") ?: ""
+                    )
+                }
             }
         }
-    )
+    }
 }
